@@ -824,21 +824,65 @@
 
             const textarea = document.getElementById('notepadContent');
 
-            textarea.addEventListener('keydown', function(e) {
+                        textarea.addEventListener('keydown', function(e) {
+                // Enter or Tab: only allowed when the current row is a number
                 if (e.keyCode === 13 || e.keyCode === 9) {
+                    const pos = textarea.selectionStart;
+                    const val = textarea.value;
+                    const lineStart = val.lastIndexOf('\n', pos - 1) + 1;
+                    const lineEnd = val.indexOf('\n', pos);
+                    const currentLine = val.substring(lineStart, lineEnd === -1 ? val.length : lineEnd);
+
+                    if (/^\d+(\.\d*)?$/.test(currentLine)) {
+                        e.preventDefault();
+                        const newVal = val.substring(0, pos) + '\n' + val.substring(pos);
+                        textarea.value = newVal;
+                        textarea.setSelectionRange(pos + 1, pos + 1);
+                        updateAnswerCount();
+                        updateUploadButton();
+                        return false;
+                    }
                     e.preventDefault();
                     return false;
                 }
+
                 if ([8, 16, 17, 18, 20, 27, 37, 38, 39, 40, 46].includes(e.keyCode)) {
                     return true;
                 }
+
                 if (!/^[a-dA-D0-9.]$/.test(e.key) && e.key.length === 1) {
                     e.preventDefault();
                     return false;
                 }
+
+                // Block mixing letters and numbers in the same row
+                const pos = textarea.selectionStart;
+                const val = textarea.value;
+                const lineStart = val.lastIndexOf('\n', pos - 1) + 1;
+                const lineEnd = val.indexOf('\n', pos);
+                const currentLine = val.substring(lineStart, lineEnd === -1 ? val.length : lineEnd);
+
+                if (/^[a-dA-D]$/.test(e.key)) {
+                    // Typing a letter — the row must be empty or all letters
+                    if (currentLine !== '' && !/^[ABCD]+$/.test(currentLine)) {
+                        e.preventDefault();
+                        return false;
+                    }
+                    // Prevent a 6th letter on one row (auto-advance handles it, but belt-and-braces)
+                    if (/^[ABCD]+$/.test(currentLine) && currentLine.length >= 5) {
+                        e.preventDefault();
+                        return false;
+                    }
+                } else if (/^[0-9.]$/.test(e.key)) {
+                    // Typing a digit or dot — the row must be empty or all digits/dot
+                    if (currentLine !== '' && !/^[0-9.]+$/.test(currentLine)) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+
+                // Dot rules
                 if (e.key === '.') {
-                    const pos = textarea.selectionStart;
-                    const val = textarea.value;
                     if (!/[0-9]/.test(val[pos - 1])) { e.preventDefault(); return false; }
                     let j = pos - 1;
                     while (j >= 0 && /[0-9.]/.test(val[j])) {
