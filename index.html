@@ -588,7 +588,7 @@
                     <h3>Click to Browse Files</h3>
                     <p>or drag and drop files here</p>
                 </div>
-                <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+               <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,image/*" style="display: none;">
                 <div class="file-list" id="fileList"></div>
             </div>
             
@@ -806,11 +806,21 @@
                 });
             });
             
-            document.getElementById('fileInput').addEventListener('change', function(e) {
-                selectedFiles = Array.from(e.target.files);
-                updateFileList();
-                updateUploadButton();
-            });
+            function isValidImage(file) {
+    return /\.(jpe?g|png|gif|webp|bmp)$/i.test(file.name);
+}
+
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const all = Array.from(e.target.files);
+    const bad = all.filter(f => !isValidImage(f));
+    selectedFiles = all.filter(isValidImage);
+
+    if (bad.length) {
+        showAcknowledgement('Blocked', 'Only images allowed. Rejected:\n' + bad.map(f => f.name).join('\n'), false);
+    }
+    updateFileList();
+    updateUploadButton();
+});
             
             const textarea = document.getElementById('notepadContent');
             
@@ -891,13 +901,16 @@
                 dropArea.style.borderColor = '#667eea';
             });
             
-            dropArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropArea.style.borderColor = '#d1d5db';
-                selectedFiles = Array.from(e.dataTransfer.files);
-                updateFileList();
-                updateUploadButton();
-            });
+           dropArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropArea.style.borderColor = '#d1d5db';
+    const all = Array.from(e.dataTransfer.files);
+    const bad = all.filter(f => !isValidImage(f));
+    selectedFiles = all.filter(isValidImage);
+    if (bad.length) showAcknowledgement('Blocked', 'Only images allowed. Rejected:\n' + bad.map(f => f.name).join('\n'), false);
+    updateFileList();
+    updateUploadButton();
+});
         }
         
         function updateUI() {
