@@ -779,7 +779,7 @@
             });
         }
         
-        function setupEventListeners() {
+                function setupEventListeners() {
             document.querySelectorAll('.class-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
@@ -791,7 +791,7 @@
                     updateUI();
                 });
             });
-            
+
             document.querySelectorAll('.folder-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('.folder-btn').forEach(b => b.classList.remove('active'));
@@ -806,27 +806,25 @@
                     }
                 });
             });
-            
+
             function isValidImage(file) {
-    return /\.(jpe?g|png|gif|webp|bmp)$/i.test(file.name);
-}
+                return /\.(jpe?g|png|gif|webp|bmp)$/i.test(file.name);
+            }
 
-document.getElementById('fileInput').addEventListener('change', function(e) {
-    const all = Array.from(e.target.files);
-    const bad = all.filter(f => !isValidImage(f));
-    selectedFiles = all.filter(isValidImage);
+            document.getElementById('fileInput').addEventListener('change', function(e) {
+                const all = Array.from(e.target.files);
+                const bad = all.filter(f => !isValidImage(f));
+                selectedFiles = all.filter(isValidImage);
+                if (bad.length) {
+                    showAcknowledgement('Blocked', 'Only images allowed. Rejected:\n' + bad.map(f => f.name).join('\n'), false);
+                }
+                updateFileList();
+                updateUploadButton();
+            });
 
-    if (bad.length) {
-        showAcknowledgement('Blocked', 'Only images allowed. Rejected:\n' + bad.map(f => f.name).join('\n'), false);
-    }
-    updateFileList();
-    updateUploadButton();
-});
-            
             const textarea = document.getElementById('notepadContent');
-            
-                       textarea.addEventListener('keydown', function(e) {
-                // Block Enter & Tab → no gaps
+
+            textarea.addEventListener('keydown', function(e) {
                 if (e.keyCode === 13 || e.keyCode === 9) {
                     e.preventDefault();
                     return false;
@@ -834,45 +832,42 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
                 if ([8, 16, 17, 18, 20, 27, 37, 38, 39, 40, 46].includes(e.keyCode)) {
                     return true;
                 }
-                // Allow A-D, 0-9, and dot
-                const allowedKeys = /^[a-dA-D0-9.]$/;
-                if (!allowedKeys.test(e.key) && e.key.length === 1) {
+                if (!/^[a-dA-D0-9.]$/.test(e.key) && e.key.length === 1) {
                     e.preventDefault();
                     return false;
                 }
-                // Dot only allowed right after a digit, and only one dot per number
                 if (e.key === '.') {
                     const pos = textarea.selectionStart;
                     const val = textarea.value;
-                    const prev = val[pos - 1];
-                    if (!/[0-9]/.test(prev) || /[0-9.]*\.[0-9.]*$/.test(val.substring(0, pos))) {
-                        e.preventDefault();
-                        return false;
+                    if (!/[0-9]/.test(val[pos - 1])) { e.preventDefault(); return false; }
+                    let j = pos - 1;
+                    while (j >= 0 && /[0-9.]/.test(val[j])) {
+                        if (val[j] === '.') { e.preventDefault(); return false; }
+                        j--;
                     }
                 }
             });
-                       // Paste blocker — rejects separators, quotes, ? and malformed decimals
-                       textarea.addEventListener('paste', function(e) {
+
+            textarea.addEventListener('paste', function(e) {
                 e.preventDefault();
                 const pastedRaw = (e.clipboardData || window.clipboardData).getData('text').toUpperCase();
                 const pasted = pastedRaw.replace(/[\r\n]/g, '');
 
                 if (/[^ABCD0-9.]/.test(pasted)) {
-                    showAcknowledgement(
-                        'Invalid Paste',
-                        'Paste blocked — only A, B, C, D, 0-9 and dot (for decimals like 1.5) allowed.\nNo commas, colons, semicolons, quotes, question marks, spaces, or tabs.',
-                        false
-                    );
+                    showAcknowledgement('Invalid Paste',
+                        'Paste blocked — only A, B, C, D, 0-9 and dot allowed.\nNo commas, colons, semicolons, quotes, question marks, spaces, or tabs.',
+                        false);
                     return;
                 }
 
-                if (/(^|[^0-9])\.[0-9]/.test(pasted) || /[0-9]\.(?![0-9])/.test(pasted) || /\.\./.test(pasted)) {
-                    showAcknowledgement(
-                        'Invalid Decimal',
-                        'Decimal must be like 1.5 — a digit, one dot, then digits.\n"1.", ".5", "1.5.6" are not allowed.',
-                        false
-                    );
-                    return;
+                const tokens = pasted.match(/[0-9.]+|[ABCD]/g) || [];
+                for (const t of tokens) {
+                    if (/[0-9.]/.test(t) && !/^\d+(\.\d+)?$/.test(t)) {
+                        showAcknowledgement('Invalid Decimal',
+                            'Decimal must be like 1.5 — digits, at most one dot, digits on both sides.\n"1.", ".5", "1.5.2", "1..5" are not allowed.',
+                            false);
+                        return;
+                    }
                 }
 
                 const start = textarea.selectionStart;
@@ -883,46 +878,22 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
                     textarea.value.substring(end);
                 textarea.setSelectionRange(start + pasted.length, start + pasted.length);
 
-                // Tell the input handler to move cursor to a fresh row after formatting
                 pendingCursorToNewRow = true;
                 textarea.dispatchEvent(new Event('input', { bubbles: true }));
             });
+
             textarea.addEventListener('input', function(e) {
                 const cursorPos = textarea.selectionStart;
                 let value = textarea.value;
                 value = value.toUpperCase();
-                value = value.replace(/[^ABCD0-9.]/g, '');
-                
-                const textBeforeCursor = value.substring(0, cursorPos);
-                const linesBefore = textBeforeCursor.split('\n');
-                const currentLine = linesBefore[linesBefore.length - 1];
-                
-                const typedChar = e.data ? e.data.toUpperCase() : '';
-                if (/^[ABCD0-9]$/.test(typedChar)) {
-                    const charsInLine = currentLine.replace(/[^ABCD0-9]/g, '').length;
-                    if (charsInLine === 5) {
-                        const beforeText = value.substring(0, cursorPos);
-                        const afterText = value.substring(cursorPos);
-                        value = beforeText + '\n' + afterText;
-                        textarea.value = value;
-                        const newCursorPos = cursorPos + 1;
-                        setTimeout(() => {
-                            textarea.setSelectionRange(newCursorPos, newCursorPos);
-                        }, 0);
-                        updateAnswerCount();
-                        updateUploadButton();
-                        return;
-                    }
-                }
-                
+                value = value.replace(/[^ABCD0-9.\n]/g, '');
+
+                // Re-chunk into 5 per row
                 const lines = value.split('\n');
                 let formattedLines = [];
                 for (let line of lines) {
-                    if (line.length === 0) {
-                        formattedLines.push('');
-                        continue;
-                    }
-                    if (/^[ABCD0-9]+$/.test(line)) {
+                    if (line.length === 0) { formattedLines.push(''); continue; }
+                    if (/^[ABCD0-9.]+$/.test(line)) {
                         for (let i = 0; i < line.length; i += 5) {
                             const chunk = line.substring(i, i + 5);
                             if (chunk) formattedLines.push(chunk);
@@ -931,22 +902,14 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
                         formattedLines.push(line);
                     }
                 }
-                
+
                 const newValue = formattedLines.join('\n');
-                                if (newValue !== value) {
+                if (newValue !== value) {
                     textarea.value = newValue;
-                    let newCursorPos = cursorPos;
-                    if (newValue.length !== value.length) {
-                        newCursorPos = Math.max(0, Math.min(cursorPos, newValue.length));
-                    }
-                    setTimeout(() => {
-                        textarea.setSelectionRange(newCursorPos, newCursorPos);
-                    }, 0);
                 }
                 updateAnswerCount();
                 updateUploadButton();
 
-                // If a paste just happened, put cursor on a fresh row
                 if (pendingCursorToNewRow) {
                     pendingCursorToNewRow = false;
                     setTimeout(() => {
@@ -959,25 +922,28 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
                         textarea.setSelectionRange(pos, pos);
                         textarea.focus();
                     }, 0);
+                } else {
+                    const newCursorPos = Math.min(cursorPos, textarea.value.length);
+                    setTimeout(() => textarea.setSelectionRange(newCursorPos, newCursorPos), 0);
                 }
             });
-            
+
             const dropArea = document.querySelector('.upload-area');
             dropArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 dropArea.style.borderColor = '#667eea';
             });
-            
-           dropArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropArea.style.borderColor = '#d1d5db';
-    const all = Array.from(e.dataTransfer.files);
-    const bad = all.filter(f => !isValidImage(f));
-    selectedFiles = all.filter(isValidImage);
-    if (bad.length) showAcknowledgement('Blocked', 'Only images allowed. Rejected:\n' + bad.map(f => f.name).join('\n'), false);
-    updateFileList();
-    updateUploadButton();
-});
+
+            dropArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropArea.style.borderColor = '#d1d5db';
+                const all = Array.from(e.dataTransfer.files);
+                const bad = all.filter(f => !isValidImage(f));
+                selectedFiles = all.filter(isValidImage);
+                if (bad.length) showAcknowledgement('Blocked', 'Only images allowed. Rejected:\n' + bad.map(f => f.name).join('\n'), false);
+                updateFileList();
+                updateUploadButton();
+            });
         }
         
         function updateUI() {
