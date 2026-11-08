@@ -817,8 +817,7 @@
                 const bad = all.filter(f => !isValidImage(f));
                 selectedFiles = all.filter(isValidImage);
                 if (bad.length) {
-                showAcknowledgement('EXTRACT ZIP FILE & UPLOAD', 'Only numbered images allowed (1.png, 2.jpg, 3.png…). Rejected:\n' + bad.map(f => f.name).join('\n'), false);
-                }
+                if (bad.length) showAcknowledgement('EXTRACT ZIP FILE & UPLOAD', 'Only numbered images allowed (1.png, 2.jpg, 3.png…).', false);
                 updateFileList();
                 updateUploadButton();
             });
