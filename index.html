@@ -930,7 +930,11 @@
                         textarea.focus();
                     }, 0);
                 } else {
-                    const newCursorPos = Math.min(cursorPos, textarea.value.length);
+                    const oldBeforeCursor = value.substring(0, cursorPos);
+                    const newBeforeCursor = newValue.substring(0, Math.min(cursorPos, newValue.length));
+                    const delta = (newBeforeCursor.match(/\n/g) || []).length
+                                - (oldBeforeCursor.match(/\n/g) || []).length;
+                    const newCursorPos = Math.min(cursorPos + Math.max(0, delta), textarea.value.length);
                     setTimeout(() => textarea.setSelectionRange(newCursorPos, newCursorPos), 0);
                 }
             });
