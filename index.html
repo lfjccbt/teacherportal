@@ -873,7 +873,8 @@
                         e.preventDefault();
                         return false;
                     }
-                } else if (/^[0-9.]$/.test(e.key)) {
+                } 
+                else if (/^[0-9.]$/.test(e.key)) {
                     // Typing a digit or dot — the row must be empty or all digits/dot
                     if (currentLine !== '' && !/^[0-9.]+$/.test(currentLine)) {
                         e.preventDefault();
