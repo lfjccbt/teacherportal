@@ -851,21 +851,20 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
                 }
             });
                        // Paste blocker — rejects separators, quotes, ? and malformed decimals
-            textarea.addEventListener('paste', function(e) {
+                       textarea.addEventListener('paste', function(e) {
                 e.preventDefault();
-                const pasted = (e.clipboardData || window.clipboardData).getData('text').toUpperCase().replace(/[\r\n]/g, '');
+                const pastedRaw = (e.clipboardData || window.clipboardData).getData('text').toUpperCase();
+                const pasted = pastedRaw.replace(/[\r\n]/g, '');
 
-                // Any char that isn't A-D, 0-9 or dot → reject
                 if (/[^ABCD0-9.]/.test(pasted)) {
                     showAcknowledgement(
                         'Invalid Paste',
-                        'Paste blocked — only A, B, C, D, 0-9 and dot (for decimals like 1.5) allowed.\nNo commas, colons, semicolons, quotes, question marks, spaces, or line breaks.',
+                        'Paste blocked — only A, B, C, D, 0-9 and dot (for decimals like 1.5) allowed.\nNo commas, colons, semicolons, quotes, question marks, spaces, or tabs.',
                         false
                     );
                     return;
                 }
 
-                // Reject malformed decimals: 1., .5, 1.5.6, .., 1..5
                 if (/(^|[^0-9])\.[0-9]/.test(pasted) || /[0-9]\.(?![0-9])/.test(pasted) || /\.\./.test(pasted)) {
                     showAcknowledgement(
                         'Invalid Decimal',
@@ -883,7 +882,21 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
                     textarea.value.substring(end);
                 textarea.setSelectionRange(start + pasted.length, start + pasted.length);
                 textarea.dispatchEvent(new Event('input', { bubbles: true }));
-            }); 
+
+                // After formatting re-wraps, move cursor to next row, first cell
+                setTimeout(() => {
+                    const val = textarea.value;
+                    let pos = start + pasted.length;
+                    const nl = val.indexOf('\n', pos);
+                    const cursor = (nl === -1) ? val.length + 1 : nl + 1;
+
+                    if (cursor > val.length) {
+                        textarea.value = val + '\n';
+                    }
+                    textarea.setSelectionRange(cursor, cursor);
+                    textarea.focus();
+                }, 10);
+            });
             textarea.addEventListener('input', function(e) {
                 const cursorPos = textarea.selectionStart;
                 let value = textarea.value;
