@@ -852,35 +852,38 @@
                 e.preventDefault();
                 const pastedRaw = (e.clipboardData || window.clipboardData).getData('text').toUpperCase();
 
-                                const pasted = pastedRaw.replace(/[\r\n]/g, '');
+                                                // Validate line by line
+                const rawLines = pastedRaw.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
 
-                // If paste is purely letters A-D → apply 5-per-row rule
-                if (/^[ABCD]+$/.test(pasted)) {
-                    const rawLines = pastedRaw.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
-                    const badLine = rawLines.find(l => l.length !== 5);
-                    if (badLine) {
+                for (const ln of rawLines) {
+                    // Letters-only line → must be exactly 5
+                    if (/^[ABCD]+$/.test(ln)) {
+                        if (ln.length !== 5) {
+                            showAcknowledgement(
+                                'Invalid Row Length',
+                                'Letter rows must have exactly 5 letters.\nProblem line: "' + ln + '" (' + ln.length + ' letters).',
+                                false
+                            );
+                            return;
+                        }
+                    }
+                    // Single number line → must be int or decimal
+                    else if (/^\d+(\.\d+)?$/.test(ln)) {
+                        // valid, continue
+                    }
+                    // Anything else → reject
+                    else {
                         showAcknowledgement(
-                            'Invalid Row Length',
-                            'Each row must have exactly 5 letters.\nProblem line: "' + badLine + '" (' + badLine.length + ' letters).',
+                            'Paste Blocked',
+                            'Each line must be either:\n• 5 letters (A, B, C, D), or\n• a single number like 1, 15, 1.5\n\nProblem line: "' + ln + '"\nNo commas, colons, semicolons, quotes, question marks, or spaces.',
                             false
                         );
                         return;
                     }
                 }
-                // If paste is a single valid number (int or decimal) → allow as one answer
-                else if (/^\d+(\.\d+)?$/.test(pasted)) {
-                    // valid — falls through to insert
-                }
-                // Otherwise reject
-                else {
-                    showAcknowledgement(
-                        'Paste Blocked',
-                        'Paste is only allowed for letters (5 per row) or a single number like 1, 15, 1.5.\nNo commas, colons, semicolons, quotes, question marks, spaces, or line breaks.',
-                        false
-                    );
-                    return;
-                }
 
+                // All lines valid — rejoin with newlines for insertion
+                const pasted = rawLines.join('\n');
                 const start = textarea.selectionStart;
                 const end = textarea.selectionEnd;
                 textarea.value = textarea.value.substring(0, start) + pasted + textarea.value.substring(end);
