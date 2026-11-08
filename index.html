@@ -853,7 +853,7 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
                        // Paste blocker — rejects separators, quotes, ? and malformed decimals
             textarea.addEventListener('paste', function(e) {
                 e.preventDefault();
-                const pasted = (e.clipboardData || window.clipboardData).getData('text').toUpperCase();
+                const pasted = (e.clipboardData || window.clipboardData).getData('text').toUpperCase().replace(/[\r\n]/g, '');
 
                 // Any char that isn't A-D, 0-9 or dot → reject
                 if (/[^ABCD0-9.]/.test(pasted)) {
