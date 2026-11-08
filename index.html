@@ -824,22 +824,71 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
             
             const textarea = document.getElementById('notepadContent');
             
-            textarea.addEventListener('keydown', function(e) {
-                if ([8, 9, 13, 16, 17, 18, 20, 27, 37, 38, 39, 40, 46].includes(e.keyCode)) {
+                       textarea.addEventListener('keydown', function(e) {
+                // Block Enter & Tab → no gaps
+                if (e.keyCode === 13 || e.keyCode === 9) {
+                    e.preventDefault();
+                    return false;
+                }
+                if ([8, 16, 17, 18, 20, 27, 37, 38, 39, 40, 46].includes(e.keyCode)) {
                     return true;
                 }
-                const allowedKeys = /^[a-dA-D0-9]$/;
+                // Allow A-D, 0-9, and dot
+                const allowedKeys = /^[a-dA-D0-9.]$/;
                 if (!allowedKeys.test(e.key) && e.key.length === 1) {
                     e.preventDefault();
                     return false;
                 }
+                // Dot only allowed right after a digit, and only one dot per number
+                if (e.key === '.') {
+                    const pos = textarea.selectionStart;
+                    const val = textarea.value;
+                    const prev = val[pos - 1];
+                    if (!/[0-9]/.test(prev) || /[0-9.]*\.[0-9.]*$/.test(val.substring(0, pos))) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
             });
-            
+                       // Paste blocker — rejects separators, quotes, ? and malformed decimals
+            textarea.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pasted = (e.clipboardData || window.clipboardData).getData('text').toUpperCase();
+
+                // Any char that isn't A-D, 0-9 or dot → reject
+                if (/[^ABCD0-9.]/.test(pasted)) {
+                    showAcknowledgement(
+                        'Invalid Paste',
+                        'Paste blocked — only A, B, C, D, 0-9 and dot (for decimals like 1.5) allowed.\nNo commas, colons, semicolons, quotes, question marks, spaces, or line breaks.',
+                        false
+                    );
+                    return;
+                }
+
+                // Reject malformed decimals: 1., .5, 1.5.6, .., 1..5
+                if (/(^|[^0-9])\.[0-9]/.test(pasted) || /[0-9]\.(?![0-9])/.test(pasted) || /\.\./.test(pasted)) {
+                    showAcknowledgement(
+                        'Invalid Decimal',
+                        'Decimal must be like 1.5 — a digit, one dot, then digits.\n"1.", ".5", "1.5.6" are not allowed.',
+                        false
+                    );
+                    return;
+                }
+
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                textarea.value =
+                    textarea.value.substring(0, start) +
+                    pasted +
+                    textarea.value.substring(end);
+                textarea.setSelectionRange(start + pasted.length, start + pasted.length);
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+            }); 
             textarea.addEventListener('input', function(e) {
                 const cursorPos = textarea.selectionStart;
                 let value = textarea.value;
                 value = value.toUpperCase();
-                value = value.replace(/[^ABCD0-9\n]/g, '');
+                value = value.replace(/[^ABCD0-9.]/g, '');
                 
                 const textBeforeCursor = value.substring(0, cursorPos);
                 const linesBefore = textBeforeCursor.split('\n');
@@ -1074,9 +1123,9 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
                     if (line[i].match(/[ABCD]/)) {
                         tokens.push(line[i]);
                         i++;
-                    } else if (line[i].match(/[0-9]/)) {
+                     } else if (line[i].match(/[0-9]/)) {
                         let num = '';
-                        while (i < line.length && line[i].match(/[0-9]/)) {
+                        while (i < line.length && line[i].match(/[0-9.]/)) {
                             num += line[i];
                             i++;
                         }
