@@ -807,8 +807,9 @@
                 });
             });
 
-            function isValidImage(file) {
-                return /\.(jpe?g|png|gif|webp|bmp)$/i.test(file.name);
+             function isValidImage(file) {
+                // Only allow pure numeric filenames like 1.png, 2.jpg, 10.jpeg
+                return /^\d+\.(jpe?g|png|gif|webp|bmp)$/i.test(file.name);
             }
 
             document.getElementById('fileInput').addEventListener('change', function(e) {
@@ -816,7 +817,7 @@
                 const bad = all.filter(f => !isValidImage(f));
                 selectedFiles = all.filter(isValidImage);
                 if (bad.length) {
-                    showAcknowledgement('Blocked', 'Only images allowed. Rejected:\n' + bad.map(f => f.name).join('\n'), false);
+                showAcknowledgement('Blocked', 'Only numbered images allowed (1.png, 2.jpg, 3.png…). Rejected:\n' + bad.map(f => f.name).join('\n'), false);
                 }
                 updateFileList();
                 updateUploadButton();
@@ -994,8 +995,7 @@
                 const all = Array.from(e.dataTransfer.files);
                 const bad = all.filter(f => !isValidImage(f));
                 selectedFiles = all.filter(isValidImage);
-                if (bad.length) showAcknowledgement('Blocked', 'Only images allowed. Rejected:\n' + bad.map(f => f.name).join('\n'), false);
-                updateFileList();
+          if (bad.length) showAcknowledgement('Blocked', 'Only numbered images allowed (1.png, 2.jpg, 3.png…). Rejected:\n' + bad.map(f => f.name).join('\n'), false);
                 updateUploadButton();
             });
         }
