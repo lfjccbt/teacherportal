@@ -891,31 +891,7 @@
                     }
                 }
             });
-                           textarea.addEventListener('beforeinput', function(e) {
-                if (e.inputType !== 'insertText') return;
-                const data = e.data;
-                if (!data) return;
-
-                const pos = textarea.selectionStart;
-                const val = textarea.value;
-                const lineStart = val.lastIndexOf('\n', pos - 1) + 1;
-                const lineEnd = val.indexOf('\n', pos);
-                const currentLine = val.substring(lineStart, lineEnd === -1 ? val.length : lineEnd);
-
-                if (/^[a-dA-D]$/i.test(data)) {
-                    if (currentLine !== '' && !/^[ABCD]+$/.test(currentLine)) {
-                        e.preventDefault(); return;
-                    }
-                    if (/^[ABCD]+$/.test(currentLine) && currentLine.length >= 5) {
-                        e.preventDefault(); return;
-                    }
-                } else if (/^[0-9.]$/.test(data)) {
-                    if (currentLine !== '' && !/^[0-9.]+$/.test(currentLine)) {
-                        e.preventDefault(); return;
-                    }
-                }
-            });     
-
+                          
                        textarea.addEventListener('paste', function(e) {
                 e.preventDefault();
                 const pastedRaw = (e.clipboardData || window.clipboardData).getData('text').toUpperCase();
