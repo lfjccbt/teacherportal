@@ -848,40 +848,35 @@
                 }
             });
 
-            textarea.addEventListener('paste', function(e) {
+                       textarea.addEventListener('paste', function(e) {
                 e.preventDefault();
                 const pastedRaw = (e.clipboardData || window.clipboardData).getData('text').toUpperCase();
-                const pasted = pastedRaw.replace(/[\r\n]/g, '');
 
-                if (/[^ABCD0-9.]/.test(pasted)) {
-                    showAcknowledgement('Invalid Paste',
-                        'Paste blocked — only A, B, C, D, 0-9 and dot allowed.\nNo commas, colons, semicolons, quotes, question marks, spaces, or tabs.',
+                const pasted = pastedRaw.replace(/[\r\n]/g, '');
+                if (/[^ABCD]/.test(pasted)) {
+                    showAcknowledgement('Paste Blocked',
+                        'Paste is only allowed for letters (A, B, C, D).\nNumbers must be typed one at a time.',
                         false);
                     return;
                 }
 
-                const tokens = pasted.match(/[0-9.]+|[ABCD]/g) || [];
-                for (const t of tokens) {
-                    if (/[0-9.]/.test(t) && !/^\d+(\.\d+)?$/.test(t)) {
-                        showAcknowledgement('Invalid Decimal',
-                            'Decimal must be like 1.5 — digits, at most one dot, digits on both sides.\n"1.", ".5", "1.5.2", "1..5" are not allowed.',
-                            false);
-                        return;
-                    }
+                const rawLines = pastedRaw.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+                const badLine = rawLines.find(l => l.length !== 5);
+                if (badLine) {
+                    showAcknowledgement('Invalid Row Length',
+                        'Each row must have exactly 5 letters.\nProblem line: "' + badLine + '" (' + badLine.length + ' letters).',
+                        false);
+                    return;
                 }
 
                 const start = textarea.selectionStart;
                 const end = textarea.selectionEnd;
-                textarea.value =
-                    textarea.value.substring(0, start) +
-                    pasted +
-                    textarea.value.substring(end);
+                textarea.value = textarea.value.substring(0, start) + pasted + textarea.value.substring(end);
                 textarea.setSelectionRange(start + pasted.length, start + pasted.length);
 
                 pendingCursorToNewRow = true;
                 textarea.dispatchEvent(new Event('input', { bubbles: true }));
             });
-
             textarea.addEventListener('input', function(e) {
                 const cursorPos = textarea.selectionStart;
                 let value = textarea.value;
