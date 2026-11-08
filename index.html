@@ -817,7 +817,7 @@
                 const bad = all.filter(f => !isValidImage(f));
                 selectedFiles = all.filter(isValidImage);
                 if (bad.length) {
-                showAcknowledgement('Blocked', 'Only numbered images allowed (1.png, 2.jpg, 3.png…). Rejected:\n' + bad.map(f => f.name).join('\n'), false);
+                showAcknowledgement('EXTRACT ZIP FILE & UPLOAD', 'Only numbered images allowed (1.png, 2.jpg, 3.png…). Rejected:\n' + bad.map(f => f.name).join('\n'), false);
                 }
                 updateFileList();
                 updateUploadButton();
@@ -995,7 +995,7 @@
                 const all = Array.from(e.dataTransfer.files);
                 const bad = all.filter(f => !isValidImage(f));
                 selectedFiles = all.filter(isValidImage);
-          if (bad.length) showAcknowledgement('Blocked', 'Only numbered images allowed (1.png, 2.jpg, 3.png…). Rejected:\n' + bad.map(f => f.name).join('\n'), false);
+          if (bad.length) showAcknowledgement('EXTARC ZIP FILE & UPLOAD', 'Only numbered images allowed (1.png, 2.jpg, 3.png…). Rejected:\n' + bad.map(f => f.name).join('\n'), false);
                 updateUploadButton();
             });
         }
