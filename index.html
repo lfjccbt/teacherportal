@@ -655,6 +655,7 @@
         let selectedClass = "1D";
         let selectedFolder = "questions";
         let accessToken = localStorage.getItem('access_token') || '';
+        let pendingCursorToNewRow = false;
         
         // ========== DOM ELEMENTS ==========
         const tokenInput = document.getElementById('accessToken');
@@ -881,21 +882,10 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
                     pasted +
                     textarea.value.substring(end);
                 textarea.setSelectionRange(start + pasted.length, start + pasted.length);
+
+                // Tell the input handler to move cursor to a fresh row after formatting
+                pendingCursorToNewRow = true;
                 textarea.dispatchEvent(new Event('input', { bubbles: true }));
-
-                // After formatting re-wraps, move cursor to next row, first cell
-                setTimeout(() => {
-                    const val = textarea.value;
-                    let pos = start + pasted.length;
-                    const nl = val.indexOf('\n', pos);
-                    const cursor = (nl === -1) ? val.length + 1 : nl + 1;
-
-                    if (cursor > val.length) {
-                        textarea.value = val + '\n';
-                    }
-                    textarea.setSelectionRange(cursor, cursor);
-                    textarea.focus();
-                }, 10);
             });
             textarea.addEventListener('input', function(e) {
                 const cursorPos = textarea.selectionStart;
@@ -943,7 +933,7 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
                 }
                 
                 const newValue = formattedLines.join('\n');
-                if (newValue !== value) {
+                                if (newValue !== value) {
                     textarea.value = newValue;
                     let newCursorPos = cursorPos;
                     if (newValue.length !== value.length) {
@@ -955,6 +945,21 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
                 }
                 updateAnswerCount();
                 updateUploadButton();
+
+                // If a paste just happened, put cursor on a fresh row
+                if (pendingCursorToNewRow) {
+                    pendingCursorToNewRow = false;
+                    setTimeout(() => {
+                        let val = textarea.value;
+                        if (!val.endsWith('\n')) {
+                            textarea.value = val + '\n';
+                            val = textarea.value;
+                        }
+                        const pos = val.length;
+                        textarea.setSelectionRange(pos, pos);
+                        textarea.focus();
+                    }, 0);
+                }
             });
             
             const dropArea = document.querySelector('.upload-area');
