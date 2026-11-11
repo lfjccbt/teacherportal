@@ -1193,11 +1193,6 @@ for (let i = 0; i < tokens.length; i++) {
     }
 }
 if (line) pdfContent += line.trimEnd() + '\n';
-        line = '';
-    }
-}
-if (line) pdfContent += line.trimEnd() + '\n';
-
 pdfContent += `\n${'─'.repeat(64)}`;
 pdfContent += `\nTotal Questions: ${tokens.length}`;
            
