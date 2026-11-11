@@ -1178,10 +1178,10 @@
             const filenameDate = `${day}-${month}-${year.slice(-2)}`;
 
             let pdfContent = `LFJC ${section} - ${shortDate} KEY\n`;
-pdfContent += `${'─'.repeat(64)}\n\n`;
+pdfContent += `${'─'.repeat(70)}\n\n`;
 
-const PER_LINE = 8;
-const CELL = 8;
+const PER_LINE = 10;
+const CELL = 7;
 
 let line = '';
 for (let i = 0; i < tokens.length; i++) {
@@ -1193,7 +1193,7 @@ for (let i = 0; i < tokens.length; i++) {
     }
 }
 if (line) pdfContent += line.trimEnd() + '\n';
-pdfContent += `\n${'─'.repeat(64)}`;
+pdfContent += `\n${'─'.repeat(70)}`;
 pdfContent += `\nTotal Questions: ${tokens.length}`;
            
 
