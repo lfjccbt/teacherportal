@@ -1176,22 +1176,26 @@
             const [year, month, day] = selectedDate.split('-');
             const shortDate = `${day}/${month}/${year.slice(-2)}`;
             const filenameDate = `${day}-${month}-${year.slice(-2)}`;
-            
+
             let pdfContent = `LFJC ${section} - ${shortDate} KEY\n`;
-            pdfContent += `${'─'.repeat(50)}\n\n`;
-            
-            let line = '';
-            for (let i = 0; i < tokens.length; i++) {
-                line += `${i+1})${tokens[i]} `;
-                if ((i + 1) % 10 === 0) {
-                    pdfContent += line + '\n';
-                    line = '';
-                }
-            }
-            if (line) pdfContent += line + '\n';
-            
-            pdfContent += `\n${'─'.repeat(50)}`;
-            pdfContent += `\nTotal Questions: ${tokens.length}`;
+pdfContent += `${'─'.repeat(60)}\n\n`;
+
+let line = '';
+for (let i = 0; i < tokens.length; i++) {
+    const cell = `${i + 1})${tokens[i]}`.padEnd(6, ' ');
+    line += cell;
+    if ((i + 1) % 10 === 0) {
+        pdfContent += line.trimEnd() + '\n';
+        line = '';
+    }
+}
+if (line) pdfContent += line.trimEnd() + '\n';
+
+pdfContent += `\n${'─'.repeat(60)}`;
+pdfContent += `\nTotal Questions: ${tokens.length}`;
+           
+
+
             
             const base64Content = btoa(unescape(encodeURIComponent(content)));
             
