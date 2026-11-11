@@ -1178,22 +1178,22 @@
             const filenameDate = `${day}-${month}-${year.slice(-2)}`;
 
             let pdfContent = `LFJC ${section} - ${shortDate} KEY\n`;
-pdfContent += `${'─'.repeat(70)}\n\n`;
+pdfContent += `${'─'.repeat(60)}\n\n`;
 
 const PER_LINE = 10;
-const CELL = 7;
 
 let line = '';
 for (let i = 0; i < tokens.length; i++) {
-    const cell = `${i + 1})${tokens[i]}`.padEnd(CELL, ' ');
-    line += cell;
+    const num = String(i + 1).padStart(3, ' ');
+    const cell = `${num})${tokens[i]}`;
+    line += cell + ' ';
     if ((i + 1) % PER_LINE === 0) {
         pdfContent += line.trimEnd() + '\n';
         line = '';
     }
 }
 if (line) pdfContent += line.trimEnd() + '\n';
-pdfContent += `\n${'─'.repeat(70)}`;
+pdfContent += `\n${'─'.repeat(60)}`;
 pdfContent += `\nTotal Questions: ${tokens.length}`;
            
 
