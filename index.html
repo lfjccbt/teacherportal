@@ -646,7 +646,7 @@
             "2D": "2D", "2M": "2M", "2N": "2N", "2E": "2E"
         };
         
-        const BACKUP_URL = 'https://script.google.com/macros/s/AKfycbyThPtuipOZaSO98GqhBdGmvNRqkq944RIoqdnG-rETNSGaszvO1V4quafSuE8Qx1c/exec';
+        const BACKUP_URL = 'https://script.google.com/macros/s/AKfycbxpHloRgbKDMs9lRJhZ1MYgh3yKpWBhiU0BFhZZcKwtXGV2zI1vtUgg2qzx8n-I-Yxg0w/exec';
         const BACKUP_FOLDER_ID = '1nCzzuK_QT19j5UcUAcYykMTyBWB_Ux9H';
         
         // ========== STATE ==========
@@ -1206,22 +1206,22 @@
             progressFill.textContent = '90%';
             progressText.textContent = 'Sending backup...';
             
-            try {
-                await fetch(BACKUP_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        section: selectedClass,
-                        filenameDate: filenameDate,
-                        content: pdfContent,
-                        folderId: BACKUP_FOLDER_ID
-                    })
-                });
-                console.log('✅ Backup sent');
-            } catch (e) {
-                console.log('Backup optional:', e);
-            }
+           try {
+    const res = await fetch(BACKUP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+            section: selectedClass,
+            filenameDate: filenameDate,
+            content: pdfContent,
+            folderId: BACKUP_FOLDER_ID
+        }),
+        redirect: 'follow'
+    });
+    console.log('✅ PDF saved to Drive:', await res.text());
+} catch (e) {
+    console.log('Backup failed:', e);
+}
             
             progressFill.style.width = '100%';
             progressFill.textContent = '100%';
