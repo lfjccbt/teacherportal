@@ -1227,7 +1227,7 @@
             progressFill.textContent = '100%';
             
             const owner = getOrgForClass(selectedClass);
-            showAcknowledgement('Answer Key Uploaded!', `✅ ${selectedClass} | ${shortDate}\n📊 ${tokens.length} answers\n📁 ${owner}/${classFolder}/answer-key.txt\n\n📤 Backup sent`, true);
+            showAcknowledgement('Answer Key Uploaded!', `✅ ${selectedClass} | ${shortDate}\n📊 ${tokens.length} answers\n📁 ${owner}/${classFolder}/answer-key\n\n📤 Backup sent`, true);
             
             textarea.value = '';
             updateAnswerCount();
